@@ -47,12 +47,12 @@ after_initialize do
       #           .limit(30)
 
       # สร้าง TopicList จากผลลัพธ์
-      #TopicList.new("top", @user, topics)
+      TopicList.new("top", @user, topics)
 
       
       
       
-      limit_topics(topics, limit)
+      #limit_topics(topics, limit)
     end
 
     # Helper to determine period start time
