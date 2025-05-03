@@ -33,24 +33,24 @@ after_initialize do
 
 
     def list_top_for(period, limit = nil)
+      # Ensure the period is sanitized (e.g., daily, weekly, monthly)
+      period = period.to_s.downcase
+
       # ดึงข้อมูลหัวข้อพร้อมเรียงลำดับตาม "views"
-      #topics = Topic
-      #           .visible
+
+      topics = Topic
+                 .visible
+                 .where("topics.views IS NOT NULL")
+                 .where("topics.bumped_at > ?", period_to_date(period)) # Filter for the period
+                 .order(views: :desc) # Order by view count
       #           .order(views: :desc) # เรียงตามจำนวน views
       #           .limit(30)
 
       # สร้าง TopicList จากผลลัพธ์
       #TopicList.new("top", @user, topics)
 
-      # Ensure the period is sanitized (e.g., daily, weekly, monthly)
-      period = period.to_s.downcase
-      raise Discourse::InvalidParameters.new(:period) unless %w{daily weekly monthly yearly all}.include?(period)
-
-      # Custom query to order by views
-      topics = @guardian.visible_topics
-               .where("topics.views IS NOT NULL")
-               .where("topics.bumped_at > ?", period_to_date(period)) # Filter for the period
-               .order(views: :desc) # Order by view count
+      
+      
       
       limit_topics(topics, limit)
     end
