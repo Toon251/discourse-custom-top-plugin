@@ -32,24 +32,38 @@ after_initialize do
     alias_method :original_top_results, :list_top_for
 
 
-    def list_top_for(period)
+    def list_top_for(period, limit = nil)
       # ดึงข้อมูลหัวข้อพร้อมเรียงลำดับตาม "views"
-      topics = Topic
-                 .visible
-                 .order(views: :desc) # เรียงตามจำนวน views
-                 .limit(30)
+      #topics = Topic
+      #           .visible
+      #           .order(views: :desc) # เรียงตามจำนวน views
+      #           .limit(30)
 
       # สร้าง TopicList จากผลลัพธ์
-      TopicList.new("top", @user, topics)
+      #TopicList.new("top", @user, topics)
+
+      # Ensure the period is sanitized (e.g., daily, weekly, monthly)
+      period = period.to_s.downcase
+      raise Discourse::InvalidParameters.new(:period) unless %w{daily weekly monthly yearly all}.include?(period)
+
+      # Custom query to order by views
+      topics = @guardian.visible_topics
+               .where("topics.views IS NOT NULL")
+               .where("topics.bumped_at > ?", period_to_date(period)) # Filter for the period
+               .order(views: :desc) # Order by view count
+      
+      limit_topics(topics, limit)
     end
 
-    def user_ids
-      return [] if @user.nil? || topic.nil? || topic.user_id.nil?
-
-      allowed_ids = topic.allowed_user_ids || []
-      user_array = allowed_ids.compact # ลบค่า nil ออกจาก allowed_user_ids
-
-      [topic.user_id] + user_array - [@user.id]
+    # Helper to determine period start time
+    def period_to_date(period)
+      case period
+      when "daily"   then 1.day.ago
+      when "weekly"  then 1.week.ago
+      when "monthly" then 1.month.ago
+      when "yearly"  then 1.year.ago
+      else 10.years.ago # All time
+      end
     end
 
   end
