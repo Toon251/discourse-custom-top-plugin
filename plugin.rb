@@ -1,4 +1,4 @@
-# name: custom-top
+# name: discourse-custom-top-plugin
 # about: Custom top
 # version: 0.0.1
 # authors: Paitoon Burapavijitnon
