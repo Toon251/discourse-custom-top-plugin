@@ -70,5 +70,20 @@ after_initialize do
 
   end
 
+  # เรียกไฟล์เสริมสำหรับการขยายฟังก์ชัน
+  require_dependency 'plugin/filter_badges'
+
+  # เพิ่ม Badge ใน Topic API
+  ::TopicView.add_serializer_method(:creator_badges) do
+    object.topic.creator.user_badges.map do |user_badge|
+      {
+        id: user_badge.badge.id,
+        name: user_badge.badge.name,
+        description: user_badge.badge.description,
+        icon: user_badge.badge.icon
+      }
+    end
+  end
+
   
 end
